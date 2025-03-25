@@ -3,7 +3,7 @@ sequenceDiagram
     participant browser
     participant server
 
-    Note right of browser: User types a note and clicks "Save"
+    Note right of browser: I typed a note for eg: "Jesus Christ It's Jason Bourne" and clicked "Save"
 
     browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
     activate server
