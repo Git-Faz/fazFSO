@@ -1,21 +1,15 @@
-const Hello = ({name,age}) => {
-    const dob = () => new Date().getFullYear()-age;
-    
-    return(
-        <div>
-            <p>Hi {name}! You are {age} years old, born in {dob()} </p>
-        </div>
-    )
-}
+import { useState } from "react";
 
 const MyApp = () => {
-    const name = 'faz', age = 20;
-    let ms = "High Quality Phone Spare Parts at Affordable Price"
-    console.log(ms.toLowerCase());
+    const [count,setCount] = useState(10);
+    const countPlus = () => setCount(prevCount => prevCount+1);
+    const countMinus = () => setCount(prevCount => prevCount-1)
     return(
         <>
-        <Hello name={name} age = {age}/>
-        <Hello name="Sam" age = "21"/>
+            
+            <button onClick={countPlus}>+</button>
+            <h1>{count}</h1>
+            <button onClick={countMinus}>-</button>
         </>
     )
 }
