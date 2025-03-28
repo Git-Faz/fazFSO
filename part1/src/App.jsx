@@ -41,7 +41,7 @@ const Content = (props) => {
 }
 
 const Part = (props) => {
-  return <p>{props.name} {props.exercises}</p>
+  return <p>{props.name} - {props.exercises}</p>
 }
 
 const Total = (props) => {
