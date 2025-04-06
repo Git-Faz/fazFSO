@@ -50,7 +50,7 @@ const Total = (props) => {
     props.parts[1].exercises + 
     props.parts[2].exercises;
 
-  return <p>Total Number of Exercises {totalExercises}</p>
+  return <p>Total Number of Exercises - {totalExercises}</p>
 }
 
 export default App;
