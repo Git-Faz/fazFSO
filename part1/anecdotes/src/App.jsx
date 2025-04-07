@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-const Button = ({onclick,text}) => <button onClick={onclick} text={text}>{text}</button>
+const Button = ({ onclick, text }) => <button onClick={onclick}>{text}</button>
+
+const Anecdote = ({ anecdote = 'No anecdotes yet', votes = 0  }) => <p>{anecdote}</p>
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -13,17 +15,34 @@ const App = () => {
     'The only way to go fast, is to go well.'
   ];
 
-  const [selected,setSelected] = useState(0);
+  const [selected, setSelected] = useState(0);
   const randomDisplay = () => {
     setSelected(Math.floor(Math.random() * anecdotes.length));
-    console.log(selected,anecdotes[selected]);
+    console.log(selected, anecdotes[selected], 'Votes: ', votes[selected]);
   }
-  return(
+
+  const [votes, setVotes] = useState(new Array(anecdotes.length).fill(0));
+  const vote = () => {
+    const copy = [...votes];
+    copy[selected] += 1;
+    setVotes(copy);
+  }
+
+
+  return (
     <div>
+      <h1>Anecdote of the day</h1>
       <p>{anecdotes[selected]}</p>
       <Button onclick={randomDisplay} text='Next Anecdote'></Button>
+      <Button onclick={vote} text='Vote'></Button>
+      <p>Has {votes[selected]} votes</p>
+      <h2>Anecdote with most votes</h2>
+      <Anecdote anecdote={anecdotes[votes.indexOf(Math.max(...votes))]} votes={Math.max(...votes)}></Anecdote>
     </div>
   )
 }
 
 export default App
+
+
+
