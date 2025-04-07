@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 const Button = ({ onclick, text }) => <button onClick={onclick}>{text}</button>
-
 const Anecdote = ({ anecdote = 'No anecdotes yet', votes = 0  }) => <p>{anecdote}</p>
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',

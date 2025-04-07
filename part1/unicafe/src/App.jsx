@@ -40,7 +40,7 @@ const App = () => {
               <Stats text='Bad' value={bad}></Stats>
               <Stats text={'Total'} value={good + neutral + bad}></Stats>
               <Stats text={'Average'} value={(good - bad) / (good + neutral + bad)}></Stats>
-              <Stats text={'Positive'} value={good / (good + neutral + bad)}></Stats>
+              <Stats text={'Positive'} value={`${((good / (good + neutral + bad)) * 100)} %`}></Stats>
             </tbody>
           </table>
         </>
