@@ -1,19 +1,14 @@
 const Title = ({name}) => <h1>{name}</h1>
-    
 
 const Header = ({ heading }) => <h2>{heading}</h2>
-
 
 const Part = ({ name, exercises }) => <p>{name} - {exercises}</p>
 
 const Total = ({ parts }) => {
-    const totalExe = parts.reduce((acc, part) => {
-        console.log(acc, part.exercises);
-        return acc + part.exercises},0
-    )
+    const totalExercises = parts.reduce((sum, part) => sum + part.exercises, 0);
     return (
-        <p>Total Number of exercises - {totalExe}</p>
-    )
+        <p>Total number of exercises: {totalExercises}</p>
+    );
 }
 const Content = ({ parts }) => {
     return (
