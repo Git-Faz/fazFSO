@@ -1,0 +1,43 @@
+*{
+    box-sizing: border-box;
+}
+
+h1,h2,div{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+h1,h2{
+    background-color: lightblue;
+    padding: 10px;
+}
+body{
+    margin: 10px;
+}
+.message{
+    /* color: darkgreen; */
+    background: lightgreen;
+    font-size: 20px;
+    border: 2px solid darkgreen;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px
+}
+
+.delete{
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px;
+    margin-left: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.contactList{
+    padding: 10px;
+    margin-bottom: 10px
+}
+
+form>div{
+    margin-bottom: 10px;
+}

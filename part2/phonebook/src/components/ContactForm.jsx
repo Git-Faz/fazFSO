@@ -1,4 +1,5 @@
 const ContactForm = ({ newName, onNameChange, newNumber, onNumberChange, onSubmit }) => {
+    
     return (
         <form onSubmit={onSubmit}>
             <h2>Add a New Contact</h2>
