@@ -19,6 +19,16 @@
       "name": "Mary Poppendieck",
       "number": "39-23-6423122",
       "id": "4"
+    },
+    {
+      "id": "a07e",
+      "name": "Dexter Morgan",
+      "number": "91-10-1234523"
+    },
+    {
+      "id": "7eb3",
+      "name": "Chad",
+      "number": "91-00-6996123"
     }
   ]
 }
