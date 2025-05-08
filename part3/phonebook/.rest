@@ -17,3 +17,6 @@ Content-Type: application/json
 {
     "name":"brad", "number": "040-134256"
 }
+
+###
+HEAD http://localhost:3001/api/persons
