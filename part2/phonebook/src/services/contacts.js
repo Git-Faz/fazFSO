@@ -13,8 +13,7 @@ const add = (contactInfo) =>{
 }
 
 const  remove = (id) => {
-    const req = axios.delete(`${baseUrl}/${id}`)
-    return req.then(response => response.data)
+    return axios.delete(`${baseUrl}/${id}`)
 }
 
 const update = (id, contactInfo) => {

@@ -34,14 +34,19 @@ const App = () => {
     clearNotification();
   }
 
-  useEffect(() => {
-    Contacts
-      .getAll()
-      .then(response => {
-        setPersons(response);
-        console.log(response);
-      })
-  }, [])
+useEffect(() => {
+  Contacts.getAll()
+    .then(response => {
+    console.log("Fetched contacts:", response);
+    if (Array.isArray(response)) {
+      setPersons(response);
+    } else {
+      console.error("Expected array but got:", response);
+      setPersons([]);  // fallback to empty array
+    }
+  });
+}, []);
+
 
   const addPerson = (e) => {
     e.preventDefault();
@@ -125,3 +130,5 @@ const App = () => {
 }
 
 export default App;
+
+

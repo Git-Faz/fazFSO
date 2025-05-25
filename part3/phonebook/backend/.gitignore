@@ -1,1 +1,4 @@
 node_modules
+.rest
+.env
+npm-debug.log
