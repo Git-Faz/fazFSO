@@ -85,7 +85,7 @@ const App = () => {
         console.log(persons);
       })
       .catch(error => {
-        console.log(error);
+        console.log(error.response.data.error);
         errorMessage(`${nameObject.name} could not be added to the server`);
       })     
   }
