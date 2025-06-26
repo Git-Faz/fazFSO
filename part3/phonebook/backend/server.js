@@ -45,6 +45,18 @@ app.post('/api/persons', (req, res, next) => {
         return res.status(400).json({ error: 'name or number missing' });
     }
 
+    if (person.name.length < 3) {
+        return res.status(400).json({ error: 'name must be at least 3 characters long' });
+    }
+
+    if (person.number.length < 8) {
+        return res.status(400).json({ error: 'number must be at least 8 characters long' });
+    }
+
+    if (!/^\d{2,3}-\d+$/.test(person.number)) {
+        return res.status(400).json({ error: 'number must be in the format XX-XXXXXXX or XXX-XXXXXXX' });
+    }
+
     Person.findOne({ name: person.name })
         .then(existingPerson => {
             if (existingPerson) {
