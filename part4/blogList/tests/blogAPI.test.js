@@ -27,8 +27,8 @@ describe("Blog API Tests", () => {
   });
 
   test("unique identifier is named id", async () => {
-    const response = await api.get("/api/blogs");
-    const blogs = response.body[0];
+    const currentBlogs = await api.get("/api/blogs");
+    const blogs = currentBlogs.body[0];
     const keys = Object.keys(blogs);
     //console.log(`Keys in the first blog: ${keys}`);
     assert(keys.includes("id"));
@@ -46,11 +46,11 @@ describe("Blog API Tests", () => {
       .get("/api/blogs")
       .expect(200)
       .expect((res) => {
-        const blogs = res.body;
+        const updatedBlogs = res.body;
         //console.log(`Blogs in the response: ${JSON.stringify(blogs, null, 2)}`);
 
-        assert(blogs.length === blogsList.length + 1);
-        assert(blogs.some((blog) => blog.title === singleBlog.title));
+        assert(updatedBlogs.length === blogsList.length + 1);
+        assert(updatedBlogs.some((blog) => blog.title === singleBlog.title));
       })
       .expect("Content-Type", /application\/json/);
   });
@@ -62,9 +62,8 @@ describe("Blog API Tests", () => {
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    const response = await api.get("/api/blogs");
-    const blogs = response.body;
-    const addedBlog = blogs.find((blog) => blog.title === noLikesBlog.title);
+    const updatedBlogs = await api.get("/api/blogs");
+    const addedBlog = updatedBlogs.body.find((blog) => blog.title === noLikesBlog.title);
 
     assert(addedBlog.likes === 0);
     strictEqual(addedBlog.likes, 0);
@@ -77,8 +76,50 @@ describe("Blog API Tests", () => {
       .expect(400)
       .expect("Content-Type", /application\/json/);
   });
+});
 
-  after(async () => {
-    await mongoose.connection.close();
+describe('deletion of blogs', () => {
+  test('should delete a blog by id', async () => {
+    const currentBlogs = await api.get('/api/blogs');
+    console.log('blogs before deletion:');
+    for (const blog of currentBlogs.body) {
+      console.log(`- ${blog.title}`);
+    }
+    await api
+      .delete(`/api/blogs/${currentBlogs.body[0].id}`)
+      .expect(204);
+    console.log(`\nDeleted blog : ${currentBlogs.body[0].title}`);
+
+    const updatedBlogs = await api.get('/api/blogs');
+    console.log('blogs after deletion:');
+    for (const blog of updatedBlogs.body) {
+      console.log(`- ${blog.title}`);
+    }
+
+    assert(updatedBlogs.body.length === currentBlogs.body.length - 1);
+    assert(!updatedBlogs.body.some((blog) => blog.id === currentBlogs.body[0].id));
   });
 });
+
+describe('updation of blogs', () => {
+  test('should update a blog by id', async () => {
+    const currentBlogs = await api.get('/api/blogs');
+    const blogToUpdate = currentBlogs.body[0];
+    console.log(`Updating the blog: '${blogToUpdate.title}' which has ${blogToUpdate.likes} likes`);
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send({ likes: 100 })
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    const updatedBlogs = await api.get('/api/blogs');
+    const updatedBlog = updatedBlogs.body.find((blog) => blog.id === blogToUpdate.id);
+    console.log(`Updated the blog: '${blogToUpdate.title}' to ${updatedBlog.likes} likes`);
+    assert(updatedBlog.likes === 100);
+    //assert(updatedBlog.author === 'Updated Author');
+  });
+});
+
+after(async () => {
+    await mongoose.connection.close();
+  });
