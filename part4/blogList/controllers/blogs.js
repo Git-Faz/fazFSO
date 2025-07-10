@@ -19,7 +19,7 @@ blogsRouter.post('/',async (req,res) =>{
 
     const savedBlog = await blog.save();
     res.status(201).json(savedBlog);
-    console.log('Blog saved:', savedBlog); // Log the saved blog title
+    //console.log('Blog saved:', savedBlog); // Log the saved blog title
 })
 
 export default blogsRouter;

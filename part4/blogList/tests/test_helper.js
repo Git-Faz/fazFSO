@@ -50,16 +50,28 @@ const blogsList = [
         __v: 0,
       },
     ];
-const singleBlog = [
+
+const singleBlog =
       {
-        _id: "5a422a851b54a676234d17f7",
         title: "React patterns",
         author: "Michael Chan",
         url: "https://reactpatterns.com/",
         likes: 7,
-        __v: 0,
-      },
-    ];
+      };
+
+
 const emptyBlogs = [];
 
-export { blogsList, singleBlog, emptyBlogs };
+const noLikesBlog = {
+      title: "No Likes Blog",
+      author: "Unknown",
+      url: "http://example.com/no-likes",
+      __v: 0,
+};
+
+const invalidBlog = {
+      author: "Unknown",
+      likes: 0,
+    };
+
+export { blogsList, singleBlog, emptyBlogs, noLikesBlog, invalidBlog };
