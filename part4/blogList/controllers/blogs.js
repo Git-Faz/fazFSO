@@ -4,20 +4,22 @@ import {Blog} from '../models/blog.js'
 // Router for handling blog-related routes
 const blogsRouter = Router()
 
-blogsRouter.get('/', (req, res) => {
-    Blog.find({}).then(blogs => {
-        res.json(blogs);
-        console.log('Blogs retrieved:', blogs); // Log the retrieved blogs;
-    })
+blogsRouter.get('/', async (req, res) => {
+    const blogs = await Blog.find({});
+    res.json(blogs);
+    //console.log('Blogs retrieved:', blogs); // Log the retrieved blogs;
 })
 
-blogsRouter.post('/', (req,res) =>{
+blogsRouter.post('/',async (req,res) =>{
     const blog = new Blog(req.body)
 
-    blog.save().then( result =>{ 
-        res.status(201).json(result)
-        console.log('Blog saved:', result);
-    })
+    if (!blog.title || !blog.url) {
+        return res.status(400).json({ error: 'Title and URL are required' });
+    }
+
+    const savedBlog = await blog.save();
+    res.status(201).json(savedBlog);
+    console.log('Blog saved:', savedBlog); // Log the saved blog title
 })
 
 export default blogsRouter;

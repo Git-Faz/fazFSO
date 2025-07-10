@@ -5,5 +5,5 @@ import logger from "./utils/logger.js";
 const port = PORT || 3001;
 
 app.listen(port, () => {
-  logger.info(`Server running on port ${port}`);
+  logger.info(`Server running on http://localhost:${port}`);
 });

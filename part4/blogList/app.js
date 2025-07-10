@@ -1,3 +1,4 @@
+import 'express-async-errors'
 import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
@@ -24,5 +25,9 @@ app.use(express.static('dist'))
 app.use(express.json())
 app.use(cors())
 app.use('/api/blogs',blogsRouter)
+
+app.get('/', (req, res) => {
+  res.send('<h1>Welcome to the Blog API</h1>')
+})
 
 export default app
