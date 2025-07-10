@@ -63,7 +63,9 @@ describe("Blog API Tests", () => {
       .expect("Content-Type", /application\/json/);
 
     const updatedBlogs = await api.get("/api/blogs");
-    const addedBlog = updatedBlogs.body.find((blog) => blog.title === noLikesBlog.title);
+    const addedBlog = updatedBlogs.body.find(
+      (blog) => blog.title === noLikesBlog.title
+    );
 
     assert(addedBlog.likes === 0);
     strictEqual(addedBlog.likes, 0);
@@ -78,48 +80,54 @@ describe("Blog API Tests", () => {
   });
 });
 
-describe('deletion of blogs', () => {
-  test('should delete a blog by id', async () => {
-    const currentBlogs = await api.get('/api/blogs');
-    console.log('blogs before deletion:');
+describe("deletion of blogs", () => {
+  test("should delete a blog by id", async () => {
+    const currentBlogs = await api.get("/api/blogs");
+    console.log("blogs before deletion:");
     for (const blog of currentBlogs.body) {
       console.log(`- ${blog.title}`);
     }
-    await api
-      .delete(`/api/blogs/${currentBlogs.body[0].id}`)
-      .expect(204);
+    await api.delete(`/api/blogs/${currentBlogs.body[0].id}`).expect(204);
     console.log(`\nDeleted blog : ${currentBlogs.body[0].title}`);
 
-    const updatedBlogs = await api.get('/api/blogs');
-    console.log('blogs after deletion:');
+    const updatedBlogs = await api.get("/api/blogs");
+    console.log("blogs after deletion:");
     for (const blog of updatedBlogs.body) {
       console.log(`- ${blog.title}`);
     }
 
     assert(updatedBlogs.body.length === currentBlogs.body.length - 1);
-    assert(!updatedBlogs.body.some((blog) => blog.id === currentBlogs.body[0].id));
+    assert(
+      !updatedBlogs.body.some((blog) => blog.id === currentBlogs.body[0].id)
+    );
   });
 });
 
-describe('updation of blogs', () => {
-  test('should update a blog by id', async () => {
-    const currentBlogs = await api.get('/api/blogs');
+describe("updation of blogs", () => {
+  test("should update a blog by id", async () => {
+    const currentBlogs = await api.get("/api/blogs");
     const blogToUpdate = currentBlogs.body[0];
-    console.log(`Updating the blog: '${blogToUpdate.title}' which has ${blogToUpdate.likes} likes`);
+    console.log(
+      `Updating the blog: '${blogToUpdate.title}' which has ${blogToUpdate.likes} likes`
+    );
     await api
       .put(`/api/blogs/${blogToUpdate.id}`)
       .send({ likes: 100 })
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
-    const updatedBlogs = await api.get('/api/blogs');
-    const updatedBlog = updatedBlogs.body.find((blog) => blog.id === blogToUpdate.id);
-    console.log(`Updated the blog: '${blogToUpdate.title}' to ${updatedBlog.likes} likes`);
+    const updatedBlogs = await api.get("/api/blogs");
+    const updatedBlog = updatedBlogs.body.find(
+      (blog) => blog.id === blogToUpdate.id
+    );
+    console.log(
+      `Updated the blog: '${blogToUpdate.title}' to ${updatedBlog.likes} likes`
+    );
     assert(updatedBlog.likes === 100);
-    //assert(updatedBlog.author === 'Updated Author');
+    strictEqual(updatedBlog.likes, 100);
   });
 });
 
 after(async () => {
-    await mongoose.connection.close();
-  });
+  await mongoose.connection.close();
+});
