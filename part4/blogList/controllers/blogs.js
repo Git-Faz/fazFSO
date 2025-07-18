@@ -1,50 +1,85 @@
-import {Router} from 'express'
-import {Blog} from '../models/blog.js'
-
+import { Router } from "express";
+import { Blog } from "../models/blog.js";
+import { userExtractor } from "../utils/middleware.js";
 // Router for handling blog-related routes
-const blogsRouter = Router()
+const blogsRouter = Router();
 
-blogsRouter.get('/', async (req, res) => {
-    const blogs = await Blog.find({});
-    res.json(blogs);
-    //console.log('Blogs retrieved:', blogs); // Log the retrieved blogs;
-})
+blogsRouter.get("/", async (req, res) => {
+  const blogs = await Blog.find({}).populate("user", {
+    username: 1,
+    name: 1,
+  });
+  res.json(blogs);
+  //console.log('Blogs retrieved:', blogs); // Log the retrieved blogs;
+}); //works fine
 
-blogsRouter.post('/',async (req,res) =>{
-    const blog = new Blog(req.body)
+blogsRouter.post("/", userExtractor, async (req, res) => {
+  const { user } = req;
+  if (!user) {
+    return res.status(400).json({ error: "User not found" });
+  }
 
-    if (!blog.title || !blog.url) {
-        return res.status(400).json({ error: 'Title and URL are required' });
-    }
+  const { title, author, url, likes } = req.body;
 
-    const savedBlog = await blog.save();
-    res.status(201).json(savedBlog);
-    //console.log('Blog saved:', savedBlog); // Log the saved blog title
-})
+  if (!title || !url) {
+    return res.status(400).json({ error: "Title and URL are required" });
+  }
 
-blogsRouter.delete('/:id', async (req,res) => {
-    const { id } = req.params;
-    const deletedBlog = await Blog.findByIdAndDelete(id);
+  const blog = new Blog({
+    title,
+    author,
+    url,
+    likes: likes || 0,
+    user: user,
+  });
 
-    if (!deletedBlog) {
-        return res.status(404).json({ error: 'Blog not found' });
-    }
+  const savedBlog = await blog.save();
+  console.log(`Blog saved: ${savedBlog.title} by ${savedBlog.author}`);
+  user.blogs = user.blogs.concat(savedBlog._id);
+  await user.save();
 
-    res.status(204).end();
-    //console.log(`Blog with ID ${id} deleted`); // Log the deletion
-})
+  res.status(201).json(savedBlog);
+}); //works fine
 
-blogsRouter.put('/:id', async (req, res) => {
-    const { id } = req.params;
-    const updatedBlog = await Blog
-        .findByIdAndUpdate(id, req.body, { new: true });
+blogsRouter.delete("/:id", userExtractor, async (req, res) => {
+  const { id } = req.params;
+  const { user } = req;
 
-    if (!updatedBlog) {
-        return res.status(404).json({ error: 'Blog not found' });
-    }
+  if (!user) {
+    return res.status(400).json({ error: "User not found" });
+  }
+  const blog = await Blog.findById(id);
 
-    res.json(updatedBlog);
-    //console.log(`Blog with ID ${id} updated:`, updatedBlog);
-})
+  if (blog.user.toString() !== user._id.toString()) {
+    return res
+      .status(403)
+      .json({ error: "You do not have permission to delete this blog" });
+  }
+  await Blog.findByIdAndDelete(id);
+  res.status(204).end();
+}); //works fine
+
+blogsRouter.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title, author, url, likes } = req.body;
+
+  const updatedBlog = await Blog
+    .findByIdAndUpdate(
+        id,
+        { title, author, url, likes },
+        { new: true }
+    )
+    .populate("user", {
+        username: 1,
+        name: 1,
+  });
+
+  if (!updatedBlog) {
+    return res.status(404).json({ error: "Blog not found" });
+  }
+
+  res.json(updatedBlog);
+  console.log(`Blog with ID ${id} updated:`, updatedBlog);
+}); //works fine
 
 export default blogsRouter;
