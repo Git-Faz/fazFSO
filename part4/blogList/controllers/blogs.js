@@ -34,7 +34,7 @@ blogsRouter.post("/", userExtractor, async (req, res) => {
   });
 
   const savedBlog = await blog.save();
-  console.log(`Blog saved: ${savedBlog.title} by ${savedBlog.author}`);
+  //console.log(`Blog saved: ${savedBlog.title} by ${savedBlog.author}`);
   user.blogs = user.blogs.concat(savedBlog._id);
   await user.save();
 
@@ -79,7 +79,7 @@ blogsRouter.put("/:id", async (req, res) => {
   }
 
   res.json(updatedBlog);
-  console.log(`Blog with ID ${id} updated:`, updatedBlog);
+  //console.log(`Blog with ID ${id} updated:`, updatedBlog);
 }); //works fine
 
 export default blogsRouter;

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import supertest from "supertest";
 import app from "../app.js";
 import { Blog } from "../models/blog.js";
+import { User } from "../models/user.js";
 import {
   blogsList,
   singleBlog,
@@ -12,9 +13,32 @@ import {
 import assert, { strictEqual } from "assert";
 
 const api = supertest(app);
+let token;
+
+// Test user data
+const testUser = {
+  username: "testuser",
+  name: "Test User",
+  password: "password123",
+};
 
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
+
+  await api.post("/api/users").send(testUser).expect(201);
+
+  // Login to get the token
+  const loginResponse = await api
+    .post("/api/login")
+    .send({
+      username: testUser.username,
+      password: testUser.password,
+    })
+    .expect(200);
+
+  token = loginResponse.body.token;
+
   await Blog.insertMany(blogsList);
 });
 
@@ -39,6 +63,7 @@ describe("Blog API Tests", () => {
     await api
       .post("/api/blogs")
       .send(singleBlog)
+      .set("Authorization", `Bearer ${token}`)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -55,10 +80,19 @@ describe("Blog API Tests", () => {
       .expect("Content-Type", /application\/json/);
   });
 
+  test("adding a blog without token returns 401", async () => {
+    await api
+      .post("/api/blogs")
+      .send(singleBlog)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+  });
+
   test("a blog without likes, defaults to 0", async () => {
     await api
       .post("/api/blogs")
       .send(noLikesBlog)
+      .set("Authorization", `Bearer ${token}`)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
@@ -75,56 +109,69 @@ describe("Blog API Tests", () => {
     await api
       .post("/api/blogs")
       .send(invalidBlog)
+      .set("Authorization", `Bearer ${token}`)
       .expect(400)
       .expect("Content-Type", /application\/json/);
   });
-});
 
-describe("deletion of blogs", () => {
-  test("should delete a blog by id", async () => {
-    const currentBlogs = await api.get("/api/blogs");
-    console.log("blogs before deletion:");
-    for (const blog of currentBlogs.body) {
-      console.log(`- ${blog.title}`);
-    }
-    await api.delete(`/api/blogs/${currentBlogs.body[0].id}`).expect(204);
-    console.log(`\nDeleted blog : ${currentBlogs.body[0].title}`);
+  describe("deletion of blogs", () => {
+    test("should delete a blog created by the authenticated user", async () => {
+      const currentBlogs = await api.get("/api/blogs");
 
-    const updatedBlogs = await api.get("/api/blogs");
-    console.log("blogs after deletion:");
-    for (const blog of updatedBlogs.body) {
-      console.log(`- ${blog.title}`);
-    }
+      const newBlogResponse = await api
+        .post("/api/blogs")
+        .send(singleBlog)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(201);
 
-    assert(updatedBlogs.body.length === currentBlogs.body.length - 1);
-    assert(
-      !updatedBlogs.body.some((blog) => blog.id === currentBlogs.body[0].id)
-    );
+      const createdBlog = newBlogResponse.body;
+
+      // Delete the blog we just created
+      await api
+        .delete(`/api/blogs/${createdBlog.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(204);
+
+      //console.log(`\nDeleted blog: ${createdBlog.title}`);
+
+      const updatedBlogs = await api.get("/api/blogs");
+
+      assert(updatedBlogs.body.length === currentBlogs.body.length);
+      assert(!updatedBlogs.body.some((blog) => blog.id === createdBlog.id));
+    });
   });
-});
 
-describe("updation of blogs", () => {
-  test("should update a blog by id", async () => {
-    const currentBlogs = await api.get("/api/blogs");
-    const blogToUpdate = currentBlogs.body[0];
-    console.log(
-      `Updating the blog: '${blogToUpdate.title}' which has ${blogToUpdate.likes} likes`
-    );
-    await api
-      .put(`/api/blogs/${blogToUpdate.id}`)
-      .send({ likes: 100 })
-      .expect(200)
-      .expect("Content-Type", /application\/json/);
+  describe("updating of blogs", () => {
+    test("should update a blog by id", async () => {
+      // First create a blog
+      const newBlogResponse = await api
+        .post("/api/blogs")
+        .send(singleBlog)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(201);
 
-    const updatedBlogs = await api.get("/api/blogs");
-    const updatedBlog = updatedBlogs.body.find(
-      (blog) => blog.id === blogToUpdate.id
-    );
-    console.log(
-      `Updated the blog: '${blogToUpdate.title}' to ${updatedBlog.likes} likes`
-    );
-    assert(updatedBlog.likes === 100);
-    strictEqual(updatedBlog.likes, 100);
+      const createdBlog = newBlogResponse.body;
+      /* console.log(
+        `Updating the blog: '${createdBlog.title}' which has ${createdBlog.likes} likes`
+      ); */
+
+      await api
+        .put(`/api/blogs/${createdBlog.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Updated Title", likes: 100 })
+        .expect(200)
+        .expect("Content-Type", /application\/json/);
+
+      const updatedBlogs = await api.get("/api/blogs");
+      const updatedBlog = updatedBlogs.body.find(
+        (blog) => blog.id === createdBlog.id
+      );
+      /* console.log(
+        `Updated the blog: '${createdBlog.title}' to the name '${updatedBlog.title}' with ${updatedBlog.likes} likes`
+      ); */
+      assert(updatedBlog.likes === 100);
+      strictEqual(updatedBlog.likes, 100);
+    });
   });
 });
 

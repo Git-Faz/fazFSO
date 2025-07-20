@@ -2,14 +2,14 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/user.js';
 import logger from '../utils/logger.js';
 
-const dataLog = (req, res, next) => {
+/* const dataLog = (req, res, next) => {
   logger.info('Request Data:', {
     method: req.method,
     path: req.path,
     body: req.body,
   });
   next();
-};
+}; */
 
 const unknownEndpoint = (req, res) => {
   res.status(404).send({ error: 'unknown endpoint' });
@@ -34,7 +34,7 @@ const getTokenFrom = (req, res, next) => {
     const authorization = req.get('authorization');
     if (authorization && authorization.startsWith('Bearer ')) {
         req.token = authorization.replace('Bearer ', '');
-        console.log(`Extracted token: ${req.token}`); // Log the extracted token
+        //console.log(`Extracted token: ${req.token}`); // Log the extracted token
     }
     next();
 };
@@ -52,4 +52,4 @@ const userExtractor = async (req, res, next) => {
   next();
 };
 
-export { dataLog, unknownEndpoint, errorHandler, getTokenFrom, userExtractor };
+export { unknownEndpoint, errorHandler, getTokenFrom, userExtractor };

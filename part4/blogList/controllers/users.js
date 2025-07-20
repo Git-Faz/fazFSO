@@ -22,7 +22,7 @@ usersRouter.post('/', async (req,res) => {
     })
 
     const savedUser = await user.save()
-    console.log(`User created: ${savedUser.username} with ID ${savedUser._id}`);
+    //console.log(`User created: ${savedUser.username} with ID ${savedUser._id}`);
     res.status(201).json(savedUser)
 }) //works fine
 
