@@ -1,5 +1,8 @@
 
 
+import { User } from "../models/user.js";
+import { Blog } from "../models/blog.js";
+
 const blogsList = [
       {
         _id: "5a422a851b54a676234d17f7",
@@ -74,4 +77,23 @@ const invalidBlog = {
       likes: 0,
     };
 
-export { blogsList, singleBlog, emptyBlogs, noLikesBlog, invalidBlog };
+// Helper functions for testing
+const usersInDb = async () => {
+  const users = await User.find({});
+  return users.map(user => user.toJSON());
+};
+
+const blogsInDb = async () => {
+  const blogs = await Blog.find({});
+  return blogs.map(blog => blog.toJSON());
+};
+
+export { 
+  blogsList, 
+  singleBlog, 
+  emptyBlogs, 
+  noLikesBlog, 
+  invalidBlog,
+  usersInDb,
+  blogsInDb
+};

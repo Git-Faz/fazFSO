@@ -4,7 +4,7 @@ import supertest from "supertest";
 import app from "../app.js";
 import { Blog } from "../models/blog.js";
 import { User } from "../models/user.js";
-import { blogsList, singleBlog, invalidBlog, noLikesBlog, } from "./test_helper.js";
+import { blogsList, singleBlog, invalidBlog, noLikesBlog, blogsInDb } from "./test_helper.js";
 import assert, { strictEqual } from "assert";
 
 const api = supertest(app);
@@ -55,6 +55,9 @@ describe("Blog API Tests", () => {
   });
 
   test("Add a specific blog", async () => {
+    const blogsAtStart = await blogsInDb();
+    console.log(`Blogs at start: ${blogsAtStart.length}`);
+
     await api
       .post("/api/blogs")
       .send(singleBlog)
@@ -62,17 +65,18 @@ describe("Blog API Tests", () => {
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    await api
-      .get("/api/blogs")
-      .expect(200)
-      .expect((res) => {
-        const updatedBlogs = res.body;
-        //console.log(`Blogs in the response: ${JSON.stringify(blogs, null, 2)}`);
+    const blogsAtEnd = await blogsInDb();
+    console.log(`Blogs at end: ${blogsAtEnd.length}`);
+    console.log(`New blog added: ${blogsAtEnd[blogsAtEnd.length - 1].title}`);
 
-        assert(updatedBlogs.length === blogsList.length + 1);
-        assert(updatedBlogs.some((blog) => blog.title === singleBlog.title));
-      })
-      .expect("Content-Type", /application\/json/);
+    // Verify the count increased by 1
+    assert.strictEqual(blogsAtStart.length + 1, blogsAtEnd.length);
+    
+    // Verify the specific blog was added
+    const addedBlog = blogsAtEnd.find(blog => blog.title === singleBlog.title);
+    assert(addedBlog);
+    assert.strictEqual(addedBlog.author, singleBlog.author);
+    assert.strictEqual(addedBlog.url, singleBlog.url);
   });
 
   test("adding a blog without token returns 401", async () => {
@@ -84,6 +88,9 @@ describe("Blog API Tests", () => {
   });
 
   test("a blog without likes, defaults to 0", async () => {
+    const blogsAtStart = await blogsInDb();
+    console.log(`Blogs before adding no-likes blog: ${blogsAtStart.length}`);
+
     await api
       .post("/api/blogs")
       .send(noLikesBlog)
@@ -91,13 +98,17 @@ describe("Blog API Tests", () => {
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
-    const updatedBlogs = await api.get("/api/blogs");
-    const addedBlog = updatedBlogs.body.find(
+    const blogsAtEnd = await blogsInDb();
+    console.log(`Blogs after adding no-likes blog: ${blogsAtEnd.length}`);
+    
+    const addedBlog = blogsAtEnd.find(
       (blog) => blog.title === noLikesBlog.title
     );
 
+    console.log(`Added blog likes: ${addedBlog.likes}`);
     assert(addedBlog.likes === 0);
     strictEqual(addedBlog.likes, 0);
+    assert.strictEqual(blogsAtStart.length + 1, blogsAtEnd.length);
   });
 
   test("a blog without title or url returns 400", async () => {
@@ -111,8 +122,10 @@ describe("Blog API Tests", () => {
 
   describe("deletion of blogs", () => {
     test("should delete a blog created by the authenticated user", async () => {
-      const currentBlogs = await api.get("/api/blogs");
-
+      const blogsAtStart = await blogsInDb();
+      console.log(`Blogs at start: ${blogsAtStart.length}`);
+      
+      // Create a blog first
       const newBlogResponse = await api
         .post("/api/blogs")
         .send(singleBlog)
@@ -120,6 +133,10 @@ describe("Blog API Tests", () => {
         .expect(201);
 
       const createdBlog = newBlogResponse.body;
+      console.log(`Created blog: ${createdBlog.title}`);
+
+      const blogsAfterCreation = await blogsInDb();
+      console.log(`Blogs after creation: ${blogsAfterCreation.length}`);
 
       // Delete the blog we just created
       await api
@@ -127,17 +144,24 @@ describe("Blog API Tests", () => {
         .set("Authorization", `Bearer ${token}`)
         .expect(204);
 
-      //console.log(`\nDeleted blog: ${createdBlog.title}`);
+      const blogsAfterDeletion = await blogsInDb();
+      console.log(`Blogs after deletion: ${blogsAfterDeletion.length}`);
+      console.log(`Deleted blog: ${createdBlog.title}`);
 
-      const updatedBlogs = await api.get("/api/blogs");
-
-      assert(updatedBlogs.body.length === currentBlogs.body.length);
-      assert(!updatedBlogs.body.some((blog) => blog.id === createdBlog.id));
+      // Verify the blog count is back to original
+      assert.strictEqual(blogsAtStart.length, blogsAfterDeletion.length);
+      
+      // Verify the specific blog was removed
+      const deletedBlog = blogsAfterDeletion.find(blog => blog.id === createdBlog.id);
+      assert.strictEqual(deletedBlog, undefined);
     });
   });
 
   describe("updating of blogs", () => {
     test("should update a blog by id", async () => {
+      const blogsAtStart = await blogsInDb();
+      console.log(`Blogs at start: ${blogsAtStart.length}`);
+
       // First create a blog
       const newBlogResponse = await api
         .post("/api/blogs")
@@ -146,26 +170,35 @@ describe("Blog API Tests", () => {
         .expect(201);
 
       const createdBlog = newBlogResponse.body;
-      /* console.log(
-        `Updating the blog: '${createdBlog.title}' which has ${createdBlog.likes} likes`
-      ); */
+      console.log(`Created blog: '${createdBlog.title}' with ${createdBlog.likes} likes`);
 
+      const blogsAfterCreation = await blogsInDb();
+      console.log(`Blogs after creation: ${blogsAfterCreation.length}`);
+
+      // Update the blog
+      const updateData = { title: "Updated Title", likes: 100 };
       await api
         .put(`/api/blogs/${createdBlog.id}`)
         .set("Authorization", `Bearer ${token}`)
-        .send({ title: "Updated Title", likes: 100 })
+        .send(updateData)
         .expect(200)
         .expect("Content-Type", /application\/json/);
 
-      const updatedBlogs = await api.get("/api/blogs");
-      const updatedBlog = updatedBlogs.body.find(
+      const blogsAfterUpdate = await blogsInDb();
+      console.log(`Blogs after update: ${blogsAfterUpdate.length}`);
+      
+      const updatedBlog = blogsAfterUpdate.find(
         (blog) => blog.id === createdBlog.id
       );
-      /* console.log(
-        `Updated the blog: '${createdBlog.title}' to the name '${updatedBlog.title}' with ${updatedBlog.likes} likes`
-      ); */
-      assert(updatedBlog.likes === 100);
-      strictEqual(updatedBlog.likes, 100);
+      
+      console.log(`Updated blog: '${updatedBlog.title}' with ${updatedBlog.likes} likes`);
+      
+      // Verify the blog count stayed the same
+      assert.strictEqual(blogsAfterCreation.length, blogsAfterUpdate.length);
+      
+      // Verify the specific fields were updated
+      assert.strictEqual(updatedBlog.title, updateData.title);
+      assert.strictEqual(updatedBlog.likes, updateData.likes);
     });
   });
 });
