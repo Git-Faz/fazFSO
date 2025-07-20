@@ -7,7 +7,7 @@ import logger from './utils/logger.js'
 import blogsRouter from './controllers/blogs.js'
 import userRouter from './controllers/users.js'
 import loginRouter from './controllers/login.js' 
-import {errorHandler, getTokenFrom, unknownEndpoint} from './utils/middleware.js'
+import {dataLog,errorHandler, getTokenFrom, unknownEndpoint} from './utils/middleware.js'
 
 const app = express()
 
@@ -29,7 +29,7 @@ app.use(express.json())
 app.use(cors())
 
 // Middleware for logging request data
-// app.use(dataLog)
+app.use(dataLog)
 // Middleware for extracting token from request headers
 app.use(getTokenFrom)
 
